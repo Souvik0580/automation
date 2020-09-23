@@ -1,0 +1,14 @@
+{% extends "index.html" %}
+
+{% block content %}
+        <h4>Components</h4>
+        <div style="width:80%; float:left; height:90%">
+            {% for c in df_r["Number"] %}
+                <div class="comp"> {{ c }}<br/>{{ df_r["Number"][c] }}</div>
+                <!--<div style="width:5vw;height:8vh ; border-style:solid; border-color:green; float:left; margin:10px;"> {{ df_r["Number"][c] }}</div>-->
+            {% endfor %}
+        </div>
+        <div id="rc" class="rootcause">
+        </div>
+
+{% endblock %}

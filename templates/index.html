@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{{ title }}</title>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}" media="screen"/>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/jquery-ui.min.css') }}" media="screen"/>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/jquery-ui.theme.min.css') }}" media="screen"/>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/jquery-ui.structure.min.css') }}" media="screen"/>
+        <script src="{{ url_for('static', filename='js/jquery-3.5.1.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/jquery-ui.min.js') }}"></script>
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        
+        
+        <script>
+            
+            function toogleDataSeries(e){
+                	if (typeof(e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+                		e.dataSeries.visible = false;
+                	} else{
+                		e.dataSeries.visible = true;
+                	}
+                	e.chart.render();
+            }
+            function selectHandler() {
+                var selectedItem = chart.getSelection()[0];
+                var value = data.getValue(selectedItem.row, 0);
+                //alert('The user selected ' + value);
+              }
+            $( document ).ready(function() {
+            
+              var fromDt;
+              var toDt;
+              
+              // Load the Visualization API and the piechart package.
+              google.charts.load('current', {'packages':['corechart']});
+        
+              
+                
+             function rootCompData(dataArray) {
+               google.charts.setOnLoadCallback(function () {
+                    var data = new google.visualization.DataTable();
+                    data.addColumn('string', 'Component');
+                    data.addColumn('number', 'Incidents');
+                    /*data.addRows([
+                      ['Mushrooms', 3],
+                      ['Onions', 1],
+                      ['Olives', 1],
+                      ['Zucchini', 1],
+                      ['Pepperoni', 2]
+                    ]);*/
+                    
+                    data.addRows(dataArray);
+                    // Set chart options
+                    var options = {'title':'Root Cause Contributed',
+                                   'width':400,
+                                   'height':300};
+            
+                    // Instantiate and draw our chart, passing in some options.
+                    var chart = new google.visualization.PieChart(document.getElementById('rootcause1'));
+                    google.visualization.events.addListener(chart, 'select', () => {
+                        var selectedItem = chart.getSelection()[0];
+                        var value = data.getValue(selectedItem.row, 0);
+                        //alert('The user selected root1 ' + value);
+                        chart.setSelection([]);
+                        selectedRootCause1 = encodeURIComponent(encodeURIComponent(value));
+                        console.log(`selectedRootCause1 : ${selectedRootCause1}`);
+                        console.log(`selectedComp : ${selectedComp}`);
+                        showIncidents();
+                    });
+                    chart.draw(data, options);
+               });
+            }
+            
+            function compData(dataArray) {
+               google.charts.setOnLoadCallback(function () {
+                    var data = new google.visualization.DataTable();
+                    data.addColumn('string', 'Component');
+                    data.addColumn('number', 'Incidents');
+                    /*data.addRows([
+                      ['Mushrooms', 3],
+                      ['Onions', 1],
+                      ['Olives', 1],
+                      ['Zucchini', 1],
+                      ['Pepperoni', 2]
+                    ]);*/
+                    
+                    data.addRows(dataArray);
+                    // Set chart options
+                    var options = {'title':'Components Contributed',
+                                   'width':600,
+                                   'height':500};
+            
+                    // Instantiate and draw our chart, passing in some options.
+                    var chart = new google.visualization.PieChart(document.getElementById('comps'));
+                    google.visualization.events.addListener(chart, 'select', () => {
+                        console.log(chart.getSelection());
+                        
+                        var selectedItem = chart.getSelection()[0];
+                        if(selectedItem){
+                            var value = data.getValue(selectedItem.row, 0);
+                            //alert('The user selected comp ' + value);
+                            rootCauseByComp(value);
+                            chart.setSelection([]);
+                        }
+                            
+                    });
+                    chart.draw(data, options);
+               });
+            }
+            
+            function appData(dataArray) {
+               google.charts.setOnLoadCallback(function () {
+                    var data = new google.visualization.DataTable();
+                    data.addColumn('string', 'Component');
+                    data.addColumn('number', 'Incidents');
+                    /*data.addRows([
+                      ['Mushrooms', 3],
+                      ['Onions', 1],
+                      ['Olives', 1],
+                      ['Zucchini', 1],
+                      ['Pepperoni', 2]
+                    ]);*/
+                    
+                    data.addRows(dataArray);
+                    // Set chart options
+                    var options = {'title':'Top 5 Applications Contributed',
+                                   'width':600,
+                                   'height':500};
+            
+                    // Instantiate and draw our chart, passing in some options.
+                    var chart = new google.visualization.ColumnChart(document.getElementById('apps'));
+                    google.visualization.events.addListener(chart, 'select', () => {
+                        var selectedItem = chart.getSelection()[0];
+                        console.log(chart.getSelection());
+                        var value = data.getValue(selectedItem.row, 0);
+                        //alert('The user selected ' + value);
+                        rootCauseByComp(value);
+                        chart.setSelection([]);
+                    });
+                    chart.draw(data, options);
+               });
+            }
+            
+            function rootCompTrend(dataArray) {
+               google.charts.setOnLoadCallback(function () {
+                    var data = new google.visualization.DataTable();
+                    data.addColumn('string', 'Month');
+                    data.addColumn('number', 'Incidents');
+                    /*data.addRows([
+                      ['Mushrooms', 3],
+                      ['Onions', 1],
+                      ['Olives', 1],
+                      ['Zucchini', 1],
+                      ['Pepperoni', 2]
+                    ]);*/
+                    
+                    data.addRows(dataArray);
+                    // Set chart options
+                    var options = {'title':'Root Cause Trend Month on Month',
+                                   'width':400,
+                                   'height':300};
+            
+                    // Instantiate and draw our chart, passing in some options.
+                    var chart = new google.visualization.ColumnChart(document.getElementById('roottrend'));
+                    google.visualization.events.addListener(chart, 'select', () => {
+                        var selectedItem = chart.getSelection()[0];
+                        console.log(chart.getSelection());
+                        var value = data.getValue(selectedItem.row, 0);
+                        //alert('The user selected ' + value);
+                        chart.setSelection([]);
+                    });
+                    chart.draw(data, options);
+               });
+            }
+            
+
+              
+              $( "#datepicker" ).datepicker({
+                  dateFormat: 'mm-dd-yy',
+                  onSelect: function(dateText) {
+                        fromDt = dateText;
+                        console.log("Selected date: " + dateText + "; input's current value: " + this.value);
+                    }
+              });
+              $( "#datepicker1" ).datepicker({
+                  dateFormat: 'mm-dd-yy',
+                  onSelect: function(dateText) {
+                        toDt = dateText;
+                        console.log("Selected date: " + dateText + "; input's current value: " + this.value);
+                    }
+              });
+              
+              $( "#dialog" ).dialog({
+                  autoOpen: false,
+                  width: "60vw",
+                  display: "grid",
+                  show: {
+                    effect: "drop",
+                    duration: 1000
+                  },
+                  hide: {
+                    effect: "explode",
+                    duration: 1000
+                  },
+                  create: function( event, ui ) {
+                    // Set maxWidth
+                    $(this).css("maxWidth", "80vw");
+                    //$(this).css("display", "grid");
+                  }
+                });
+                
+                $( "#data" ).dialog({
+                  autoOpen: false,
+                  width: "auto",
+                  show: {
+                    effect: "drop",
+                    duration: 1000
+                  },
+                  hide: {
+                    effect: "explode",
+                    duration: 1000
+                  },
+                  create: function( event, ui ) {
+                    // Set maxWidth
+                    $(this).css("maxWidth", "80vw");
+                  }
+                });
+                
+                /*$( "#rootcause1" ).dialog({
+                  autoOpen: false,
+                  width: "auto",
+                  show: {
+                    effect: "drop",
+                    duration: 1000
+                  },
+                  hide: {
+                    effect: "explode",
+                    duration: 1000
+                  },
+                  create: function( event, ui ) {
+                    // Set maxWidth
+                    $(this).css("maxWidth", "80vw");
+                  }
+                });*/
+              
+              var selectedComp = "";
+              var selectedRootCause1 = "";
+              
+              function loadHome(){
+                  $.ajax("/components",   // request url
+                {
+                    success: function (data1, status, xhr) {
+                        var p = JSON.parse(data1);
+                        var comps = [];
+                        for(var key in p){
+                            comps.push([key, Number.parseInt(p[key])]);
+                        }
+                        compData(comps);
+                    }
+                });
+                
+                  $.ajax("/rootcause_by_apps",   // request url
+                    {
+                        success: function (data1, status, xhr) {
+                            var p = JSON.parse(data1);
+                            var apps = [];
+                            for(var key in p){
+                                apps.push([key, Number.parseInt(p[key])]);
+                            }
+                            appData(apps);
+                        }
+                    });
+              }
+              
+              function showIncidents(){
+                  $("#data").empty();
+                                          
+                  $.ajax(`/inc/${selectedComp}/${selectedRootCause1}`,   // request url
+                    {
+                        success: function (data, status, xhr) {
+                            $("#data").append(data);
+                            $( "#data" ).dialog( "open" );
+                        }
+                    
+                });
+              
+              }
+              
+              loadHome();
+                
+              $(".comp").click((event) => {
+                  console.log("date change");
+                  if(fromDt && toDt){
+                  console.log(`fromDt : ${fromDt}  toDt : ${toDt}`);
+                  $.ajax(`/incidents/${fromDt}/${toDt}`,   // request url
+                        {
+                            success: function (data1, status, xhr) {
+                                console.log("date success");
+                                loadHome();
+                            
+                            }
+                        });
+                    }
+              });
+              
+              function rootCauseByComp(comp) {
+                  console.log("Component clicked");
+                  var component = encodeURIComponent(encodeURIComponent(comp));
+                  selectedComp = component;
+                  $("#dialog").empty();
+                  
+                  
+                  
+                  $.ajax(`/component/${component}`,   // request url
+                    {
+                        success: function (data1, status, xhr) {// success callback function
+                                    console.log(data1);
+                                    var p = JSON.parse(data1);
+                                    var s = '<div id="rootcause1"><\div>';
+                                    var rootComp = [];
+                                    var data;
+                                    $(s).appendTo("#dialog");
+                                    for(var key in p){
+                                        rootComp.push([key, Number.parseInt(p[key])])
+                                    }
+                                    
+                                    rootCompData(rootComp);
+                                    $( "#dialog" ).dialog( "open" );
+                                    $.ajax(`/incident_by_mon/${selectedComp}`,   // request url
+                                    {
+                                        success: function (data2, status, xhr) {// success callback function
+                                        var chart = '<div id="roottrend"><\div>';
+                                        $(chart).appendTo("#dialog");
+                                        var incByMon = JSON.parse(data2);
+                                        console.log(incByMon);
+                                        console.log(incByMon[0]);
+                                        var vals = [];
+                                        for(var i=0; i<incByMon.length; i++){
+                                            var dt = new Date(incByMon[i]["Resolved Date"]);
+                                            var m = dt.getMonth();
+                                            var y = dt.getFullYear();
+                                            var d = dt.getDate();
+                                            vals.push(
+                                            [incByMon[i]["Resolved Date"], Number.parseInt(incByMon[i]["Number"])]);
+                                            
+                                        }
+                                        console.log(vals);
+                                        rootCompTrend(vals);
+                                    }});
+                                
+                            
+              
+                  $(".rootcomp").click((event) => {
+                      $("#rootcause2").empty();
+                      var root1 = encodeURIComponent(encodeURIComponent(event.target.innerHTML.split("<br>")[0].trim()));
+                      selectedRootCause1 = root1;
+                      $.ajax(`/root/${selectedComp}/${selectedRootCause1}`,   // request url
+                            {
+                                success: function (data, status, xhr) {// success callback function
+                                    console.log(data);
+                                    var p = JSON.parse(data);
+                                    var s = '<div id="rootcause2"><\div>';
+                                    $(s).appendTo("#dialog");
+                                    for(var key in p){
+                                        var s1 = '<div class="rootcomp">' +  key + '<br/>' + p[key] + '</div>'
+                                        $(s1).appendTo("#rootcause2");
+                                    }
+                                    
+                                    
+                                    
+                                    $(".round").click((event) => {
+                                          console.log("round");
+                                          var root = $(event.target).siblings( ".rootcomp" );
+                                          var root1 = encodeURIComponent(encodeURIComponent($(root[0]).text()));
+                                          var root2 = encodeURIComponent(encodeURIComponent($(root[1]).text()));
+                                          console.log($(root[0]).text());
+                                          console.log($(root[1]).text());
+                                          $("#data").empty();
+                                          
+                                          $.ajax(`/root/${selectedComp}/${root1}/${root2}`,   // request url
+                                            {
+                                                success: function (data, status, xhr) {
+                                                    $("#data").append(data);
+                                                    $( "#data" ).dialog( "open" );
+                                                }
+                                            
+                                        });
+                                          
+                                          
+                                      });
+                                    
+                            }
+                            });
+                        });
+                        }
+                    });
+              }
+              
+              
+              
+              
+              
+            });
+        </script>
+    </head>
+    <body>
+        <header>
+            <img src="/static/images/logo.png"></img>
+            <div class="head">
+                <h1>Incident Causal Analysis</h1>
+            </div>
+        </header>
+        <div id="data" title="Incidents" style="width:60vw">
+            
+        </div>
+        <div id="dialog" title="Root Cause Fishbone" style="width:60vw">
+            
+        </div>
+        
+        
+        
+        
+        <div class="content">
+            <div class="ctrl">
+                From Date: <input type="text" id="datepicker">
+                To Date: <input type="text" id="datepicker1">
+                <div class="comp">Show</div>
+            </div>
+            <div style="width:95vw; height:90%">
+                <div id="comps" style="width:48%; float:left; height:90%; margin-top:10vh;">
+            
+                </div>
+                <div id="apps" style="width:48%; float:left; height:90%; margin-top:10vh;">
+            
+                </div>
+            </div>
+        </div>
+        <footer class="foot"></footer>
+    </body>
+</html>
