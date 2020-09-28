@@ -65,7 +65,42 @@
                         selectedRootCause1 = encodeURIComponent(encodeURIComponent(value));
                         console.log(`selectedRootCause1 : ${selectedRootCause1}`);
                         console.log(`selectedComp : ${selectedComp}`);
-                        showIncidents();
+                        rootCauseL2();
+                    });
+                    chart.draw(data, options);
+               });
+            }
+            
+            function rootCompByAppData(dataArray) {
+               google.charts.setOnLoadCallback(function () {
+                    var data = new google.visualization.DataTable();
+                    data.addColumn('string', 'Component');
+                    data.addColumn('number', 'Incidents');
+                    /*data.addRows([
+                      ['Mushrooms', 3],
+                      ['Onions', 1],
+                      ['Olives', 1],
+                      ['Zucchini', 1],
+                      ['Pepperoni', 2]
+                    ]);*/
+                    
+                    data.addRows(dataArray);
+                    // Set chart options
+                    var options = {'title':'Root Cause Contributed',
+                                   'width':400,
+                                   'height':300};
+            
+                    // Instantiate and draw our chart, passing in some options.
+                    var chart = new google.visualization.PieChart(document.getElementById('rootcause1'));
+                    google.visualization.events.addListener(chart, 'select', () => {
+                        var selectedItem = chart.getSelection()[0];
+                        var value = data.getValue(selectedItem.row, 0);
+                        //alert('The user selected root1 ' + value);
+                        chart.setSelection([]);
+                        selectedRootCause1 = encodeURIComponent(encodeURIComponent(value));
+                        console.log(`selectedRootCause1 : ${selectedRootCause1}`);
+                        console.log(`selectedComp : ${selectedComp}`);
+                        rootCauseL2ForApp();
                     });
                     chart.draw(data, options);
                });
@@ -87,8 +122,8 @@
                     data.addRows(dataArray);
                     // Set chart options
                     var options = {'title':'Components Contributed',
-                                   'width':600,
-                                   'height':500};
+                                   'width':550,
+                                   'height':250};
             
                     // Instantiate and draw our chart, passing in some options.
                     var chart = new google.visualization.PieChart(document.getElementById('comps'));
@@ -99,7 +134,7 @@
                         if(selectedItem){
                             var value = data.getValue(selectedItem.row, 0);
                             //alert('The user selected comp ' + value);
-                            rootCauseByComp(value);
+                            rootCauseByComp(value, "component");
                             chart.setSelection([]);
                         }
                             
@@ -124,8 +159,8 @@
                     data.addRows(dataArray);
                     // Set chart options
                     var options = {'title':'Top 5 Applications Contributed',
-                                   'width':600,
-                                   'height':500};
+                                   'width':550,
+                                   'height':250};
             
                     // Instantiate and draw our chart, passing in some options.
                     var chart = new google.visualization.ColumnChart(document.getElementById('apps'));
@@ -134,7 +169,7 @@
                         console.log(chart.getSelection());
                         var value = data.getValue(selectedItem.row, 0);
                         //alert('The user selected ' + value);
-                        rootCauseByComp(value);
+                        rootCauseByComp(value, "app");
                         chart.setSelection([]);
                     });
                     chart.draw(data, options);
@@ -173,6 +208,79 @@
                });
             }
             
+            function root1Data(dataArray) {
+               google.charts.setOnLoadCallback(function () {
+                    var data = new google.visualization.DataTable();
+                    data.addColumn('string', 'Component');
+                    data.addColumn('number', 'Incidents');
+                    /*data.addRows([
+                      ['Mushrooms', 3],
+                      ['Onions', 1],
+                      ['Olives', 1],
+                      ['Zucchini', 1],
+                      ['Pepperoni', 2]
+                    ]);*/
+                    
+                    data.addRows(dataArray);
+                    // Set chart options
+                    var options = {'title':'Root Cause Level1 Contributed',
+                                   'width':550,
+                                   'height':250};
+            
+                    // Instantiate and draw our chart, passing in some options.
+                    var chart = new google.visualization.PieChart(document.getElementById('root1'));
+                    google.visualization.events.addListener(chart, 'select', () => {
+                        console.log(chart.getSelection());
+                        
+                        var selectedItem = chart.getSelection()[0];
+                        if(selectedItem){
+                            var value = data.getValue(selectedItem.row, 0);
+                            //alert('The user selected comp ' + value);
+                            rootCauseByComp(value, "root1");
+                            chart.setSelection([]);
+                        }
+                            
+                    });
+                    chart.draw(data, options);
+               });
+            }
+            
+            function root2Data(dataArray) {
+               google.charts.setOnLoadCallback(function () {
+                    var data = new google.visualization.DataTable();
+                    data.addColumn('string', 'Component');
+                    data.addColumn('number', 'Incidents');
+                    /*data.addRows([
+                      ['Mushrooms', 3],
+                      ['Onions', 1],
+                      ['Olives', 1],
+                      ['Zucchini', 1],
+                      ['Pepperoni', 2]
+                    ]);*/
+                    
+                    data.addRows(dataArray);
+                    // Set chart options
+                    var options = {'title':'Root Cause Level2 Contributed',
+                                   'width':550,
+                                   'height':250};
+            
+                    // Instantiate and draw our chart, passing in some options.
+                    var chart = new google.visualization.PieChart(document.getElementById('root2'));
+                    google.visualization.events.addListener(chart, 'select', () => {
+                        console.log(chart.getSelection());
+                        
+                        var selectedItem = chart.getSelection()[0];
+                        if(selectedItem){
+                            var value = data.getValue(selectedItem.row, 0);
+                            //alert('The user selected comp ' + value);
+                            rootCauseByComp(value, "root2");
+                            chart.setSelection([]);
+                        }
+                            
+                    });
+                    chart.draw(data, options);
+               });
+            }
 
               
               $( "#datepicker" ).datepicker({
@@ -212,6 +320,8 @@
                 $( "#data" ).dialog({
                   autoOpen: false,
                   width: "auto",
+                  height: "auto",
+                  maxHeight:500,
                   show: {
                     effect: "drop",
                     duration: 1000
@@ -223,6 +333,7 @@
                   create: function( event, ui ) {
                     // Set maxWidth
                     $(this).css("maxWidth", "80vw");
+                    $(this).css("maxHeight", 500);
                   }
                 });
                 
@@ -245,6 +356,7 @@
               
               var selectedComp = "";
               var selectedRootCause1 = "";
+              var selectedApp = "";
               
               function loadHome(){
                   $.ajax("/components",   // request url
@@ -270,19 +382,190 @@
                             appData(apps);
                         }
                     });
+                    
+                    
+                 $.ajax("/root1",   // request url
+                {
+                    success: function (data1, status, xhr) {
+                        var p = JSON.parse(data1);
+                        var comps = [];
+                        for(var key in p){
+                            comps.push([key, Number.parseInt(p[key])]);
+                        }
+                        root1Data(comps);
+                    }
+                });
+                 $.ajax("/root2",   // request url
+                {
+                    success: function (data1, status, xhr) {
+                        var p = JSON.parse(data1);
+                        var comps = [];
+                        for(var key in p){
+                            comps.push([key, Number.parseInt(p[key])]);
+                        }
+                        root2Data(comps);
+                    }
+                });
               }
+              var rootCauses = [];
               
-              function showIncidents(){
-                  $("#data").empty();
-                                          
-                  $.ajax(`/inc/${selectedComp}/${selectedRootCause1}`,   // request url
+              function showIncidents(roots){
+                  
+                   var s = '<div id="inc"><\div>';           
+                   $(s).appendTo("#data");           
+                  /*$.ajax(`/inc/${selectedComp}/${selectedRootCause1}`,   // request url
                     {
                         success: function (data, status, xhr) {
                             $("#data").append(data);
                             $( "#data" ).dialog( "open" );
                         }
                     
-                });
+                });*/
+                
+                $.ajax({
+                      url:`/inc/${selectedComp}/${selectedRootCause1}`
+                  }).done((res) => {
+                      $("#inc").append(res);
+                      $( "#data" ).dialog( "open" );
+                  });
+              
+              }
+              
+              
+              function showIncByRoot(roots){
+                  console.log(`showIncByRoot : ${roots}`);
+                  $("#inc").empty(); 
+                  var dataArray = {"key": roots}
+                  $.ajax({
+                    url:`/inc/${selectedComp}/${selectedRootCause1}`,
+                    data: JSON.stringify(dataArray),
+                    type: 'POST',
+                    contentType: 'application/json',
+                    dataType : 'json',
+                    success: function(result){
+                        console.log(result);
+                    },error : function(result){
+                       console.log(result);
+                       $("#inc").append(result.responseText);
+                    }
+                  });
+              }
+              
+              function showIncidentsForApp(roots){
+                  
+                   var s = '<div id="inc"><\div>';           
+                   $(s).appendTo("#data");           
+                  /*$.ajax(`/inc/${selectedComp}/${selectedRootCause1}`,   // request url
+                    {
+                        success: function (data, status, xhr) {
+                            $("#data").append(data);
+                            $( "#data" ).dialog( "open" );
+                        }
+                    
+                });*/
+                
+                $.ajax({
+                      url:`/app/inc/${selectedApp}/${selectedRootCause1}`
+                  }).done((res) => {
+                      $("#inc").append(res);
+                      $( "#data" ).dialog( "open" );
+                  });
+              
+              }
+              
+              
+              function showIncByRootForApp(roots){
+                  console.log(`showIncByRoot : ${roots}`);
+                  $("#inc").empty(); 
+                  var dataArray = {"key": roots}
+                  $.ajax({
+                    url:`/app/inc/${selectedApp}/${selectedRootCause1}`,
+                    data: JSON.stringify(dataArray),
+                    type: 'POST',
+                    contentType: 'application/json',
+                    dataType : 'json',
+                    success: function(result){
+                        console.log(result);
+                    },error : function(result){
+                       console.log(result);
+                       $("#inc").append(result.responseText);
+                    }
+                  });
+              }
+              
+              function rootCauseL2(){
+                  $("#data").empty();
+                  rootCauses = [];
+                  $.ajax(`/root/${selectedComp}/${selectedRootCause1}`,   // request url
+                            {
+                                success: function (data, status, xhr) {// success callback function
+                                    console.log(data);
+                                    var p = JSON.parse(data);
+                                    var s = '<div id="rootcause2"><\div>';
+                                    $(s).appendTo("#data");
+                                    for(var key in p){
+                                        var s1 = '<div class="rootcomp">' +  key + '<br/>' + p[key] + '</div>'
+                                        $(s1).appendTo("#rootcause2");
+                                    }
+                                    
+                                    $(".rootcomp").click((event) => {
+                                        console.log(event.target.innerHTML.split("<br>")[0]);
+                                        $(event.target).toggleClass( "rootcompToggle", () => {
+                                            console.log($(event.target).hasClass("rootcompToggle"));
+                                            if($(event.target).hasClass("rootcompToggle")){
+                                                rootCauses.push(event.target.innerHTML.split("<br>")[0])
+                                            } else {
+                                                rootCauses.splice(rootCauses.indexOf(event.target.innerHTML.split("<br>")[0]), 1);
+                                            }
+                                            console.log(rootCauses);
+                                            showIncByRoot(rootCauses);
+                                        } );
+                                        
+                                        
+                      
+                                    });
+                                    console.log(rootCauses);
+                                    showIncidents(rootCauses);
+                            }
+                    });
+              
+              }
+              
+              function rootCauseL2ForApp(){
+                  $("#data").empty();
+                  rootCauses = [];
+                  $.ajax(`/root/app/${selectedApp}/${selectedRootCause1}`,   // request url
+                            {
+                                success: function (data, status, xhr) {// success callback function
+                                    console.log(data);
+                                    var p = JSON.parse(data);
+                                    var s = '<div id="rootcause2"><\div>';
+                                    $(s).appendTo("#data");
+                                    for(var key in p){
+                                        var s1 = '<div class="rootcomp">' +  key + '<br/>' + p[key] + '</div>'
+                                        $(s1).appendTo("#rootcause2");
+                                    }
+                                    
+                                    $(".rootcomp").click((event) => {
+                                        console.log(event.target.innerHTML.split("<br>")[0]);
+                                        $(event.target).toggleClass( "rootcompToggle", () => {
+                                            console.log($(event.target).hasClass("rootcompToggle"));
+                                            if($(event.target).hasClass("rootcompToggle")){
+                                                rootCauses.push(event.target.innerHTML.split("<br>")[0])
+                                            } else {
+                                                rootCauses.splice(rootCauses.indexOf(event.target.innerHTML.split("<br>")[0]), 1);
+                                            }
+                                            console.log(rootCauses);
+                                            showIncByRootForApp(rootCauses);
+                                        } );
+                                        
+                                        
+                      
+                                    });
+                                    console.log(rootCauses);
+                                    showIncidentsForApp(rootCauses);
+                            }
+                    });
               
               }
               
@@ -303,15 +586,16 @@
                     }
               });
               
-              function rootCauseByComp(comp) {
+              function rootCauseByComp(comp, context) {
                   console.log("Component clicked");
                   var component = encodeURIComponent(encodeURIComponent(comp));
-                  selectedComp = component;
+                  
                   $("#dialog").empty();
                   
-                  
-                  
-                  $.ajax(`/component/${component}`,   // request url
+                  if(context == "component"){
+                      console.log("component");
+                      selectedComp = component;
+                      $.ajax(`/component/${component}`,   // request url
                     {
                         success: function (data1, status, xhr) {// success callback function
                                     console.log(data1);
@@ -350,61 +634,203 @@
                                 
                             
               
-                  $(".rootcomp").click((event) => {
-                      $("#rootcause2").empty();
-                      var root1 = encodeURIComponent(encodeURIComponent(event.target.innerHTML.split("<br>")[0].trim()));
-                      selectedRootCause1 = root1;
-                      $.ajax(`/root/${selectedComp}/${selectedRootCause1}`,   // request url
-                            {
-                                success: function (data, status, xhr) {// success callback function
-                                    console.log(data);
-                                    var p = JSON.parse(data);
-                                    var s = '<div id="rootcause2"><\div>';
-                                    $(s).appendTo("#dialog");
-                                    for(var key in p){
-                                        var s1 = '<div class="rootcomp">' +  key + '<br/>' + p[key] + '</div>'
-                                        $(s1).appendTo("#rootcause2");
-                                    }
-                                    
-                                    
-                                    
-                                    $(".round").click((event) => {
-                                          console.log("round");
-                                          var root = $(event.target).siblings( ".rootcomp" );
-                                          var root1 = encodeURIComponent(encodeURIComponent($(root[0]).text()));
-                                          var root2 = encodeURIComponent(encodeURIComponent($(root[1]).text()));
-                                          console.log($(root[0]).text());
-                                          console.log($(root[1]).text());
-                                          $("#data").empty();
-                                          
-                                          $.ajax(`/root/${selectedComp}/${root1}/${root2}`,   // request url
-                                            {
-                                                success: function (data, status, xhr) {
-                                                    $("#data").append(data);
-                                                    $( "#data" ).dialog( "open" );
-                                                }
-                                            
-                                        });
-                                          
-                                          
-                                      });
-                                    
-                            }
-                            });
-                        });
+                  
                         }
                     });
+                  
+                  } else if(context == "app"){
+                      console.log("application");
+                      selectedApp = component;
+                      $.ajax(`/application/${component}`,   // request url
+                    {
+                        success: function (data1, status, xhr) {// success callback function
+                                    console.log(data1);
+                                    var p = JSON.parse(data1);
+                                    var s = '<div id="rootcause1"><\div>';
+                                    var rootComp = [];
+                                    var data;
+                                    $(s).appendTo("#dialog");
+                                    for(var key in p){
+                                        rootComp.push([key, Number.parseInt(p[key])])
+                                    }
+                                    
+                                    rootCompByAppData(rootComp);
+                                    $( "#dialog" ).dialog( "open" );
+                                    $.ajax(`/incident_by_mon/app/${selectedApp}`,   // request url
+                                    {
+                                        success: function (data2, status, xhr) {// success callback function
+                                        var chart = '<div id="roottrend"><\div>';
+                                        $(chart).appendTo("#dialog");
+                                        var incByMon = JSON.parse(data2);
+                                        console.log(incByMon);
+                                        console.log(incByMon[0]);
+                                        var vals = [];
+                                        for(var i=0; i<incByMon.length; i++){
+                                            var dt = new Date(incByMon[i]["Resolved Date"]);
+                                            var m = dt.getMonth();
+                                            var y = dt.getFullYear();
+                                            var d = dt.getDate();
+                                            vals.push(
+                                            [incByMon[i]["Resolved Date"], Number.parseInt(incByMon[i]["Number"])]);
+                                            
+                                        }
+                                        console.log(vals);
+                                        rootCompTrend(vals);
+                                    }});
+                                
+                            
+              
+                  
+                        }
+                    });
+                  
+                  } else if(context == "root1"){
+                      console.log("application");
+                  
+                      $.ajax(`/root1/${component}`,   // request url
+                    {
+                        success: function (data1, status, xhr) {// success callback function
+                                    console.log(data1);
+                                    var p = JSON.parse(data1);
+                                    var s = '<div id="rootcause1"><\div>';
+                                    var rootComp = [];
+                                    var data;
+                                    $(s).appendTo("#dialog");
+                                    for(var key in p){
+                                        rootComp.push([key, Number.parseInt(p[key])])
+                                    }
+                                    
+                                    rootCompData(rootComp);
+                                    $( "#dialog" ).dialog( "open" );
+                                    $.ajax(`/incident_by_mon/app/${selectedComp}`,   // request url
+                                    {
+                                        success: function (data2, status, xhr) {// success callback function
+                                        var chart = '<div id="roottrend"><\div>';
+                                        $(chart).appendTo("#dialog");
+                                        var incByMon = JSON.parse(data2);
+                                        console.log(incByMon);
+                                        console.log(incByMon[0]);
+                                        var vals = [];
+                                        for(var i=0; i<incByMon.length; i++){
+                                            var dt = new Date(incByMon[i]["Resolved Date"]);
+                                            var m = dt.getMonth();
+                                            var y = dt.getFullYear();
+                                            var d = dt.getDate();
+                                            vals.push(
+                                            [incByMon[i]["Resolved Date"], Number.parseInt(incByMon[i]["Number"])]);
+                                            
+                                        }
+                                        console.log(vals);
+                                        rootCompTrend(vals);
+                                    }});
+                                
+                            
+              
+                  
+                        }
+                    });
+                  
+                  } else if(context == "root2"){
+                      console.log("application");
+                  
+                      $.ajax(`/root2/${component}`,   // request url
+                    {
+                        success: function (data1, status, xhr) {// success callback function
+                                    console.log(data1);
+                                    var p = JSON.parse(data1);
+                                    var s = '<div id="rootcause1"><\div>';
+                                    var rootComp = [];
+                                    var data;
+                                    $(s).appendTo("#dialog");
+                                    for(var key in p){
+                                        rootComp.push([key, Number.parseInt(p[key])])
+                                    }
+                                    
+                                    rootCompData(rootComp);
+                                    $( "#dialog" ).dialog( "open" );
+                                    $.ajax(`/incident_by_mon/app/${selectedComp}`,   // request url
+                                    {
+                                        success: function (data2, status, xhr) {// success callback function
+                                        var chart = '<div id="roottrend"><\div>';
+                                        $(chart).appendTo("#dialog");
+                                        var incByMon = JSON.parse(data2);
+                                        console.log(incByMon);
+                                        console.log(incByMon[0]);
+                                        var vals = [];
+                                        for(var i=0; i<incByMon.length; i++){
+                                            var dt = new Date(incByMon[i]["Resolved Date"]);
+                                            var m = dt.getMonth();
+                                            var y = dt.getFullYear();
+                                            var d = dt.getDate();
+                                            vals.push(
+                                            [incByMon[i]["Resolved Date"], Number.parseInt(incByMon[i]["Number"])]);
+                                            
+                                        }
+                                        console.log(vals);
+                                        rootCompTrend(vals);
+                                    }});
+                                
+                            
+              
+                  
+                        }
+                    });
+                  
+                  }
+                  
+                  
               }
               
-              
+              $('.menu_icon').mouseover(function(event) {
+                		$(this).animate({
+                        width: "12vh",
+                        height: "12vh"
+                    }, 300 );
+                });
+                $('.menu_icon').mouseleave(function(event) {
+                		$(this).animate({
+                        width: "10vh",
+                        height: "10vh"
+                    }, 300 );
+                });
+                
+                $('.menu_icon').click(function(event) {
+                    $(this).animate({
+                        right: "100px"
+                    }, 200 );
+                		$("#mySidenav").animate({
+                        width: "100px"
+                    }, 300 );
+                    
+                });
+                
+                $('.closebtn').click(function(event) {
+                		$("#mySidenav").animate({
+                        width: "0"
+                    }, 100 );
+                    $(".menu_icon").animate({
+                        right: "10px"
+                    }, 300 );
+                });
               
               
               
             });
+            
+                
+            
         </script>
     </head>
     <body>
         <header>
+            <div id="mySidenav" class="sidenav">
+              <a href="javascript:void(0)" class="closebtn">&times;</a>
+              <a href="/">Home</a>
+              <a href="#">Tools</a>
+              <a href="#">Report</a>
+              <a href="#">Contact</a>
+            </div>
+            <div class="menu_icon"></div>
             <img src="/static/images/logo.png"></img>
             <div class="head">
                 <h1>Incident Causal Analysis</h1>
@@ -427,10 +853,16 @@
                 <div class="comp">Show</div>
             </div>
             <div style="width:95vw; height:90%">
-                <div id="comps" style="width:48%; float:left; height:90%; margin-top:10vh;">
+                <div id="comps" style="width:48%; float:left; height:42%; margin-top:10vh;">
             
                 </div>
-                <div id="apps" style="width:48%; float:left; height:90%; margin-top:10vh;">
+                <div id="apps" style="width:48%; float:left; height:42%; margin-top:10vh;">
+            
+                </div>
+                <div id="root1" style="width:48%; float:left; height:42%; margin-top:10vh;">
+            
+                </div>
+                <div id="root2" style="width:48%; float:left; height:42%; margin-top:10vh;">
             
                 </div>
             </div>

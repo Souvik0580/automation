@@ -14,42 +14,87 @@ import json
 import urllib.parse
 from datetime import datetime
 from dateutil.parser import parse
+from flask import request
 
 app = Flask(__name__)
 
 df = pd.read_csv('data/incident.csv')
-df = df[['Number','Priority','Short Description','Configuration Item','Resolved','Closure Details','Root Cause','Component Views','Contributing Factor']]
+df = df[['Number','Priority','Short Description','Configuration_Item','Resolved','Closure Details','Root_Cause_L1','Category_2','Contributing Factor']]
 df['Resolved'] = pd.to_datetime(df['Resolved'])
 
-df_rootcause = df.groupby(['Component Views', 'Root Cause'])
+df_rootcause = df.groupby(['Category_2', 'Root_Cause_L1'])
 
+
+@app.route("/rca")
+def rca_page():
+    data_load()
+    return render_template("index.html", title="Incident Roott Cause Analysis")
 
 @app.route("/")
-def index_page():
+def home_page():
     data_load()
-    return render_template("index.html", title="Title Page of Hello App")
+    return render_template("home.html", title="Automation of Production")
 
+#Group by components
 @app.route("/components")
 def get_comps():
-    df_comp = df.groupby('Component Views')['Number'].count().sort_values(ascending=False).to_frame().to_dict()
+    df_comp = df.groupby('Category_2')['Number'].count().sort_values(ascending=False).to_frame().to_dict()
     return json.dumps(df_comp["Number"])
 
+#Group by root cause1
+@app.route("/root1")
+def get_root1():
+    df_comp = df.groupby('Root_Cause_L1')['Number'].count().sort_values(ascending=False).to_frame().to_dict()
+    return json.dumps(df_comp["Number"])
+
+#Group by root cause2
+@app.route("/root2")
+def get_root2():
+    df_comp = df.groupby('Contributing Factor')['Number'].count().sort_values(ascending=False).to_frame().to_dict()
+    return json.dumps(df_comp["Number"])
+
+#Group by application
 @app.route("/rootcause_by_apps")
 def rootcause_by_apps():
-    df_app = df.groupby('Configuration Item')['Number'].count().sort_values(ascending=False).to_frame().head().to_dict()
+    df_app = df.groupby('Configuration_Item')['Number'].count().sort_values(ascending=False).to_frame().head().to_dict()
     return json.dumps(df_app["Number"])
 
+#Group by root cause 2 for specific component and root cause1
 @app.route("/root/<comp>/<root1>")
 def rc_by_root(comp,root1):
-    df_rc = df[(df["Component Views"] == urllib.parse.unquote(comp)) & (df["Root Cause"] == urllib.parse.unquote(root1))]
+    df_rc = df[(df["Category_2"] == urllib.parse.unquote(comp)) & (df["Root_Cause_L1"] == urllib.parse.unquote(root1))]
     df_rc_gr = df_rc.groupby('Contributing Factor').Number.count().to_frame().to_dict()
     return json.dumps(df_rc_gr["Number"])
 
+#Group by root cause 2 for specific app and root cause1
+@app.route("/root/app/<app>/<root1>")
+def rc_by_root_for_app(app,root1):
+    df_rc = df[(df["Configuration_Item"] == urllib.parse.unquote(app)) & (df["Root_Cause_L1"] == urllib.parse.unquote(root1))]
+    df_rc_gr = df_rc.groupby('Contributing Factor').Number.count().to_frame().to_dict()
+    return json.dumps(df_rc_gr["Number"])
+
+#Group by root cause 1 for specific component
 @app.route("/component/<comp>")
 def rc_by_comp(comp):
-    df_rc = df[df['Component Views'] == urllib.parse.unquote(comp)]
-    df_rc_gr = df_rc.groupby('Root Cause').Number.count().to_frame().to_dict()
+    df_rc = df[df['Category_2'] == urllib.parse.unquote(comp)]
+    df_rc_gr = df_rc.groupby('Root_Cause_L1').Number.count().to_frame().to_dict()
     return json.dumps(df_rc_gr["Number"])
+
+#Group by root cause 1 for specific application
+@app.route("/application/<app>")
+def rc_by_app(app):
+    df_rc = df[df['Configuration_Item'] == urllib.parse.unquote(app)]
+    df_rc_gr = df_rc.groupby('Root_Cause_L1').Number.count().to_frame().to_dict()
+    return json.dumps(df_rc_gr["Number"])
+
+#Group by root cause 2 for specific root cause 1
+@app.route("/root1/<r1>")
+def rc1_by_rc2(r1):
+    df_rc = df[df['Root_Cause_L1'] == urllib.parse.unquote(r1)]
+    df_rc_gr = df_rc.groupby('Contributing Factor').Number.count().to_frame().to_dict()
+    return json.dumps(df_rc_gr["Number"])
+
+
 
 @app.route("/incidents/<start>/<end>")
 def rc_by_date(start,end):
@@ -62,26 +107,51 @@ def rc_by_date(start,end):
 def data_load():
     global df
     df = pd.read_csv('data/incident.csv')
-    df = df[['Number','Priority','Short Description','Configuration Item','Resolved','Closure Details','Root Cause','Component Views','Contributing Factor']]
+    df = df[['Number','Priority','Short Description','Configuration_Item','Resolved','Closure Details','Root_Cause_L1','Category_2','Contributing Factor']]
     df['Resolved'] = pd.to_datetime(df['Resolved'])
 
 @app.route("/root/<comp>/<root1>/<root2>")
 def rc_by_detail(comp,root1,root2):
     pd.set_option('display.max_colwidth', -1)
-    df_data = df[(df["Component Views"] == urllib.parse.unquote(comp)) & (df["Root Cause"] == urllib.parse.unquote(root1)) & (df["Contributing Factor"] == urllib.parse.unquote(root2))]
+    df_data = df[(df["Category_2"] == urllib.parse.unquote(comp)) & (df["Root_Cause_L1"] == urllib.parse.unquote(root1)) & (df["Contributing Factor"] == urllib.parse.unquote(root2))]
     print(df_data['Closure Details'])
     return df_data.to_html()
 
-@app.route("/inc/<comp>/<root>")
+@app.route("/inc/<comp>/<root>", methods=["GET","POST"])
 def inc_by_rc(comp,root):
     pd.set_option('display.max_colwidth', -1)
-    df_data = df[(df["Component Views"] == urllib.parse.unquote(comp)) & (df["Root Cause"] == urllib.parse.unquote(root))]
-    print(df_data['Closure Details'])
+    if request.method == "POST":
+        value = request.get_json()
+        print(value)
+        df_data = df[(df["Category_2"] == urllib.parse.unquote(comp)) & (df["Root_Cause_L1"] == urllib.parse.unquote(root)) & (df["Contributing Factor"].isin(value['key']))]
+    else:
+        df_data = df[(df["Category_2"] == urllib.parse.unquote(comp)) & (df["Root_Cause_L1"] == urllib.parse.unquote(root))]
+    
+    return df_data.to_html()
+
+@app.route("/app/inc/<app>/<root>", methods=["GET","POST"])
+def inc_by_app_rc(app,root):
+    pd.set_option('display.max_colwidth', -1)
+    if request.method == "POST":
+        value = request.get_json()
+        print(value)
+        df_data = df[(df["Configuration_Item"] == urllib.parse.unquote(app)) & (df["Root_Cause_L1"] == urllib.parse.unquote(root)) & (df["Contributing Factor"].isin(value['key']))]
+    else:
+        df_data = df[(df["Configuration_Item"] == urllib.parse.unquote(app)) & (df["Root_Cause_L1"] == urllib.parse.unquote(root))]
+    
     return df_data.to_html()
 
 @app.route("/incident_by_mon/<comp>")
 def inc_by_mon(comp):
-    df_by_mon = df[(df["Component Views"] == urllib.parse.unquote(comp))]
+    df_by_mon = df[(df["Category_2"] == urllib.parse.unquote(comp))]
+    df_by_mon.index = df_by_mon['Resolved'] 
+    df_by_mon = df_by_mon[['Number']].resample('M').count()
+    df_by_mon['Resolved Date'] = df_by_mon.index.strftime('%b-%Y')
+    return str(df_by_mon.to_dict(orient="records")).replace("'","\"")
+
+@app.route("/incident_by_mon/app/<app>")
+def inc_app_by_mon(app):
+    df_by_mon = df[(df["Configuration_Item"] == urllib.parse.unquote(app))]
     df_by_mon.index = df_by_mon['Resolved'] 
     df_by_mon = df_by_mon[['Number']].resample('M').count()
     df_by_mon['Resolved Date'] = df_by_mon.index.strftime('%b-%Y')
