@@ -241,6 +241,13 @@ table tfoot .links a{
     background-size: 60% 80%;
 }
 
+.appd {
+    background: url('/static/images/appd.png');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 60% 80%;
+}
+
 .item{
     width: 30%;
     height: 50%;
@@ -299,3 +306,8 @@ table tfoot .links a{
   .sidenav a {font-size: 18px;}
 }
 /* Menu*/
+
+
+	.ui-widget-overlay.ui-front { /* you want this */
+		opacity:.75;
+	}

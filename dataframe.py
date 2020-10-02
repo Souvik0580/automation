@@ -73,6 +73,13 @@ def rc_by_root_for_app(app,root1):
     df_rc_gr = df_rc.groupby('Contributing Factor').Number.count().to_frame().to_dict()
     return json.dumps(df_rc_gr["Number"])
 
+#Group by root cause 2 for specific app and root cause1
+@app.route("/root/<root1>")
+def rc_by_root_for_root1(root1):
+    df_rc = df[(df["Root_Cause_L1"] == urllib.parse.unquote(root1))]
+    df_rc_gr = df_rc.groupby('Contributing Factor').Number.count().to_frame().to_dict()
+    return json.dumps(df_rc_gr["Number"])
+
 #Group by root cause 1 for specific component
 @app.route("/component/<comp>")
 def rc_by_comp(comp):
@@ -141,6 +148,25 @@ def inc_by_app_rc(app,root):
     
     return df_data.to_html()
 
+
+@app.route("/root1/inc/<root>", methods=["GET","POST"])
+def inc_by_root1_rc(root):
+    pd.set_option('display.max_colwidth', -1)
+    if request.method == "POST":
+        value = request.get_json()
+        print(value)
+        df_data = df[(df["Root_Cause_L1"] == urllib.parse.unquote(root)) & (df["Contributing Factor"].isin(value['key']))]
+    else:
+        df_data = df[(df["Root_Cause_L1"] == urllib.parse.unquote(root))]
+    
+    return df_data.to_html()
+
+@app.route("/root2/inc/<root>", methods=["GET","POST"])
+def inc_by_root2_rc(root):
+    pd.set_option('display.max_colwidth', -1)
+    df_data = df[(df["Contributing Factor"] == urllib.parse.unquote(root))]
+    return df_data.to_html()
+
 @app.route("/incident_by_mon/<comp>")
 def inc_by_mon(comp):
     df_by_mon = df[(df["Category_2"] == urllib.parse.unquote(comp))]
@@ -152,6 +178,22 @@ def inc_by_mon(comp):
 @app.route("/incident_by_mon/app/<app>")
 def inc_app_by_mon(app):
     df_by_mon = df[(df["Configuration_Item"] == urllib.parse.unquote(app))]
+    df_by_mon.index = df_by_mon['Resolved'] 
+    df_by_mon = df_by_mon[['Number']].resample('M').count()
+    df_by_mon['Resolved Date'] = df_by_mon.index.strftime('%b-%Y')
+    return str(df_by_mon.to_dict(orient="records")).replace("'","\"")
+
+@app.route("/incident_by_mon/root1/<root1>")
+def inc_root1_by_mon(root1):
+    df_by_mon = df[(df["Root_Cause_L1"] == urllib.parse.unquote(root1))]
+    df_by_mon.index = df_by_mon['Resolved'] 
+    df_by_mon = df_by_mon[['Number']].resample('M').count()
+    df_by_mon['Resolved Date'] = df_by_mon.index.strftime('%b-%Y')
+    return str(df_by_mon.to_dict(orient="records")).replace("'","\"")
+
+@app.route("/incident_by_mon/root2/<root2>")
+def inc_root2_by_mon(root2):
+    df_by_mon = df[(df["Contributing Factor"] == urllib.parse.unquote(root2))]
     df_by_mon.index = df_by_mon['Resolved'] 
     df_by_mon = df_by_mon[['Number']].resample('M').count()
     df_by_mon['Resolved Date'] = df_by_mon.index.strftime('%b-%Y')

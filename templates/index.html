@@ -106,6 +106,8 @@
                });
             }
             
+            
+            
             function compData(dataArray) {
                google.charts.setOnLoadCallback(function () {
                     var data = new google.visualization.DataTable();
@@ -302,6 +304,7 @@
                   autoOpen: false,
                   width: "60vw",
                   display: "grid",
+                  modal: true,
                   show: {
                     effect: "drop",
                     duration: 1000
@@ -322,6 +325,7 @@
                   width: "auto",
                   height: "auto",
                   maxHeight:500,
+                  modal: true,
                   show: {
                     effect: "drop",
                     duration: 1000
@@ -357,6 +361,7 @@
               var selectedComp = "";
               var selectedRootCause1 = "";
               var selectedApp = "";
+              var selectedRoot2 = "";
               
               function loadHome(){
                   $.ajax("/components",   // request url
@@ -493,6 +498,70 @@
                   });
               }
               
+              function showIncidentsForRoot1(roots){
+                  
+                   var s = '<div id="inc"><\div>';           
+                   $(s).appendTo("#data");           
+                  /*$.ajax(`/root1/inc/${selectedRootCause1}`,   // request url
+                    {
+                        success: function (data, status, xhr) {
+                            $("#data").append(data);
+                            $( "#data" ).dialog( "open" );
+                        }
+                    
+                });*/
+                
+                $.ajax({
+                      url:`/root1/inc/${selectedRootCause1}`
+                  }).done((res) => {
+                      $("#inc").append(res);
+                      $( "#data" ).dialog( "open" );
+                  });
+              
+              }
+              
+              
+              function showIncByRootForRoot1(roots){
+                  console.log(`showIncByRoot : ${roots}`);
+                  $("#inc").empty(); 
+                  var dataArray = {"key": roots}
+                  $.ajax({
+                    url:`/root1/inc/${selectedRootCause1}`,
+                    data: JSON.stringify(dataArray),
+                    type: 'POST',
+                    contentType: 'application/json',
+                    dataType : 'json',
+                    success: function(result){
+                        console.log(result);
+                    },error : function(result){
+                       console.log(result);
+                       $("#inc").append(result.responseText);
+                    }
+                  });
+              }
+              
+              function showIncidentsForRoot2(){
+                  $("#data").empty();
+                   var s = '<div id="inc"><\div>';           
+                   $(s).appendTo("#data");           
+                  /*$.ajax(`/root2/inc/${selectedRoot2}`,   // request url
+                    {
+                        success: function (data, status, xhr) {
+                            $("#data").append(data);
+                            $( "#data" ).dialog( "open" );
+                        }
+                    
+                });*/
+                
+                $.ajax({
+                      url:`/root2/inc/${selectedRoot2}`
+                  }).done((res) => {
+                      $("#inc").append(res);
+                      $( "#data" ).dialog( "open" );
+                  });
+              
+              }
+              
               function rootCauseL2(){
                   $("#data").empty();
                   rootCauses = [];
@@ -564,6 +633,44 @@
                                     });
                                     console.log(rootCauses);
                                     showIncidentsForApp(rootCauses);
+                            }
+                    });
+              
+              }
+              
+              function rootCauseL2ForRoot1(){
+                  $("#data").empty();
+                  rootCauses = [];
+                  $.ajax(`/root/${selectedRootCause1}`,   // request url
+                            {
+                                success: function (data, status, xhr) {// success callback function
+                                    console.log(data);
+                                    var p = JSON.parse(data);
+                                    var s = '<div id="rootcause2"><\div>';
+                                    $(s).appendTo("#data");
+                                    for(var key in p){
+                                        var s1 = '<div class="rootcomp">' +  key + '<br/>' + p[key] + '</div>'
+                                        $(s1).appendTo("#rootcause2");
+                                    }
+                                    
+                                    $(".rootcomp").click((event) => {
+                                        console.log(event.target.innerHTML.split("<br>")[0]);
+                                        $(event.target).toggleClass( "rootcompToggle", () => {
+                                            console.log($(event.target).hasClass("rootcompToggle"));
+                                            if($(event.target).hasClass("rootcompToggle")){
+                                                rootCauses.push(event.target.innerHTML.split("<br>")[0])
+                                            } else {
+                                                rootCauses.splice(rootCauses.indexOf(event.target.innerHTML.split("<br>")[0]), 1);
+                                            }
+                                            console.log(rootCauses);
+                                            showIncByRootForRoot1(rootCauses);
+                                        } );
+                                        
+                                        
+                      
+                                    });
+                                    console.log(rootCauses);
+                                    showIncidentsForRoot1(rootCauses);
                             }
                     });
               
@@ -686,95 +793,15 @@
                   
                   } else if(context == "root1"){
                       console.log("application");
-                  
-                      $.ajax(`/root1/${component}`,   // request url
-                    {
-                        success: function (data1, status, xhr) {// success callback function
-                                    console.log(data1);
-                                    var p = JSON.parse(data1);
-                                    var s = '<div id="rootcause1"><\div>';
-                                    var rootComp = [];
-                                    var data;
-                                    $(s).appendTo("#dialog");
-                                    for(var key in p){
-                                        rootComp.push([key, Number.parseInt(p[key])])
-                                    }
-                                    
-                                    rootCompData(rootComp);
-                                    $( "#dialog" ).dialog( "open" );
-                                    $.ajax(`/incident_by_mon/app/${selectedComp}`,   // request url
-                                    {
-                                        success: function (data2, status, xhr) {// success callback function
-                                        var chart = '<div id="roottrend"><\div>';
-                                        $(chart).appendTo("#dialog");
-                                        var incByMon = JSON.parse(data2);
-                                        console.log(incByMon);
-                                        console.log(incByMon[0]);
-                                        var vals = [];
-                                        for(var i=0; i<incByMon.length; i++){
-                                            var dt = new Date(incByMon[i]["Resolved Date"]);
-                                            var m = dt.getMonth();
-                                            var y = dt.getFullYear();
-                                            var d = dt.getDate();
-                                            vals.push(
-                                            [incByMon[i]["Resolved Date"], Number.parseInt(incByMon[i]["Number"])]);
-                                            
-                                        }
-                                        console.log(vals);
-                                        rootCompTrend(vals);
-                                    }});
-                                
-                            
-              
-                  
-                        }
-                    });
+                      selectedRootCause1 = component;
+                      rootCauseL2ForRoot1();
+                      
                   
                   } else if(context == "root2"){
                       console.log("application");
-                  
-                      $.ajax(`/root2/${component}`,   // request url
-                    {
-                        success: function (data1, status, xhr) {// success callback function
-                                    console.log(data1);
-                                    var p = JSON.parse(data1);
-                                    var s = '<div id="rootcause1"><\div>';
-                                    var rootComp = [];
-                                    var data;
-                                    $(s).appendTo("#dialog");
-                                    for(var key in p){
-                                        rootComp.push([key, Number.parseInt(p[key])])
-                                    }
-                                    
-                                    rootCompData(rootComp);
-                                    $( "#dialog" ).dialog( "open" );
-                                    $.ajax(`/incident_by_mon/app/${selectedComp}`,   // request url
-                                    {
-                                        success: function (data2, status, xhr) {// success callback function
-                                        var chart = '<div id="roottrend"><\div>';
-                                        $(chart).appendTo("#dialog");
-                                        var incByMon = JSON.parse(data2);
-                                        console.log(incByMon);
-                                        console.log(incByMon[0]);
-                                        var vals = [];
-                                        for(var i=0; i<incByMon.length; i++){
-                                            var dt = new Date(incByMon[i]["Resolved Date"]);
-                                            var m = dt.getMonth();
-                                            var y = dt.getFullYear();
-                                            var d = dt.getDate();
-                                            vals.push(
-                                            [incByMon[i]["Resolved Date"], Number.parseInt(incByMon[i]["Number"])]);
-                                            
-                                        }
-                                        console.log(vals);
-                                        rootCompTrend(vals);
-                                    }});
-                                
-                            
-              
-                  
-                        }
-                    });
+                      selectedRoot2 = component;
+                      showIncidentsForRoot2();
+                      
                   
                   }
                   
