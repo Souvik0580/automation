@@ -311,3 +311,46 @@ table tfoot .links a{
 	.ui-widget-overlay.ui-front { /* you want this */
 		opacity:.75;
 	}
+.pannel{
+    width:20vw;
+    height:80vh;
+    float:left;
+    margin:10px;
+    padding:5px;
+    background-color:#f1f1f1;
+}
+
+.viewwin{
+    width:70vw;
+    height:80vh;
+    float:left;
+    margin:5px;
+}	
+.frame{
+    width:98%;
+    height:98%;
+}
+
+p.appdurl{
+    height:3vh;
+    padding-top:1vh;
+    color:#400a71;
+    margin:0px;
+}
+
+p.appdurl:hover{
+    background-color:#847f8a;
+    color:white;
+}
+
+#accordion .ui-accordion-header {
+  background-color: #400a71;
+  color:white;
+  margin: 0px;
+}
+
+#accordion .ui-accordion .ui-accordion-content{
+    padding:0px;
+}
+
+

@@ -35,6 +35,11 @@ def home_page():
     data_load()
     return render_template("home.html", title="Automation of Production")
 
+@app.route("/appd")
+def appd_page():
+    data_load()
+    return render_template("appd.html", title="AppD Dashboard")
+
 #Group by components
 @app.route("/components")
 def get_comps():
